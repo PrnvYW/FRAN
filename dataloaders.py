@@ -20,23 +20,16 @@ from tqdm import tqdm as tqdm
 
 DATADIR='/content/data_final'
 LOGFILE = "./age.ai.log"
-BATCH_SIZE= 4
+BATCH_SIZE= 2
 logging.basicConfig(level=logging.DEBUG, filename=LOGFILE)
 
 
 
 # Some parameters used below are defined here - ideally they come from a config file that can be easily changed
-INPUT_CLASSES = [60.]
-TARGET_CLASSES = [30.]
+INPUT_CLASSES = [20., 30., 40., 50., 60., 70., 80.]
+TARGET_CLASSES = [20., 30., 40., 50., 60., 70., 80.]
 IMAGE_SIZE = 1024
 
-
-def imageLoader(path):
-    # Using a dummy function to satisfy datasets.DatasetFolder. This is ok since it is used by datasets.DatasetFolder
-    # primarily to load images in its getitem function which we override.
-    # Todo: implement this to do an imread and use that function to read each of our imagepair files with
-    #       two successive calls to imageLoader.
-    pass
 
 class ImagePairsDataset(datasets.DatasetFolder):
     """Returns a pair of images with labels. Assumes directory structure:
@@ -141,9 +134,11 @@ class ImagePairsDataset(datasets.DatasetFolder):
       """Adding 2 extra channels"""
 
       def __call__(self, sample):
-        chn4=torch.ones(sample['input_image'].shape[0], sample['input_image'].shape[1], 1)*sample['input_ages']/100
-        chn5=torch.ones(sample['input_image'].shape[0], sample['input_image'].shape[1], 1)*sample['target_ages']/100
-        sample['input_image']=np.dstack((sample['input_image'], chn4, chn5))
+        chn4=torch.ones(1, sample['input_image'].shape[1], sample['input_image'].shape[2])*sample['input_ages']/100
+        chn5=torch.ones(1, sample['input_image'].shape[1], sample['input_image'].shape[2])*sample['target_ages']/100
+        chn4=chn4.to(device)
+        chn5=chn5.to(device)
+        sample['input_image']=torch.concat((sample['input_image'], chn4, chn5), 0)
         return sample
 
     class ToTensor(object):
@@ -190,8 +185,8 @@ class ImagePairsDataset(datasets.DatasetFolder):
     @staticmethod
     def get_transforms():
         transform = transforms.Compose([
-            ImagePairsDataset.Channel(),
             ImagePairsDataset.ToTensor(),
+            ImagePairsDataset.Channel(),
             ImagePairsDataset.RandomCrop(),
             ImagePairsDataset.Normalize(),
 
@@ -209,3 +204,11 @@ def get_dataloaders(dataset_dir=DATADIR, batch_size=BATCH_SIZE, shuffle=True):
                                                        shuffle=False if x != 'train' else shuffle, num_workers=0) for x
                         in ['train', 'val']}
     return dataloaders_dict
+
+
+
+
+
+def testdataloader():
+    loaders = get_dataloaders(shuffle=False)
+    valloader = loaders['val']
