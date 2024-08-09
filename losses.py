@@ -33,7 +33,6 @@ def get_discriminator_loss(generated_samples, discriminator, criterion, inp, tar
 
     return discriminator_loss
 
-
 def get_generator_loss(generated_samples, discriminator, criterion, inp, target_age):
 
 
@@ -50,11 +49,12 @@ def get_generator_loss(generated_samples, discriminator, criterion, inp, target_
     return generator_loss
 
 
+
 def Loss(generated ,discriminator, inp, target, target_age):
 
   L_ad=get_generator_loss(generated, discriminator, nn.BCEWithLogitsLoss(), inp, target_age)
 
-
+  generated=generated+inp[:, 0:3, :, :]
   L_p=loss_fn_vgg(generated, target)
 
   L=nn.L1Loss().to(device)
