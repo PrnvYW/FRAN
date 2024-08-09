@@ -66,7 +66,7 @@ for epoch in range(n_epochs):
 
     print(f"Epoch {epoch+1}: Ad loss: {L_ad}, Lpipis: {L_p}, L_1: {L_1}, discriminator loss: {mean_discriminator_loss}")
     if (epoch+1)%10 == 0:
-      MODEL_PATH = "model_de_age_"+str(epoch+1)+".pt"
+      MODEL_PATH = "model_"+str(epoch+1)+".pt"
       torch.save({
                   'epoch': epoch,
                   'gen_state_dict': generator.state_dict(),
